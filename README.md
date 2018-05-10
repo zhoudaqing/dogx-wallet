@@ -5,15 +5,15 @@
 [![Build Status](https://img.shields.io/travis/bitpay/tdc-wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/tdc-wallet-service)
 [![Coverage Status](https://coveralls.io/repos/bitpay/tdc-wallet-service/badge.svg?branch=master)](https://coveralls.io/r/bitpay/tdc-wallet-service?branch=master)
 
-A Multisig HD Bitcore Wallet Service.
+A Multisig HD tdc Wallet Service.
 
 # Description
 
-Bitcore Wallet Service facilitates multisig HD wallets creation and operation through a (hopefully) simple and intuitive REST API.
+tdc Wallet Service facilitates multisig HD wallets creation and operation through a (hopefully) simple and intuitive REST API.
 
 DWS can usually be installed within minutes and accommodates all the needed infrastructure for peers in a multisig wallet to communicate and operate – with minimum server trust.
   
-See [Bitcore-wallet-client](https://github.com/digibyte/tdc-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [Bitcore-wallet](https://github.com/digibyte/tdc-wallet) for a simple CLI wallet implementation that relies on DWS.
+See [tdc-wallet-client](https://github.com/digibyte/tdc-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [tdc-wallet](https://github.com/digibyte/tdc-wallet) for a simple CLI wallet implementation that relies on DWS.
 
 DWS is been used in production enviroments for [Copay Wallet](https://copay.io), [Bitpay App wallet](https://bitpay.com/wallet) and others.  
 
@@ -83,7 +83,7 @@ Note: all currency amounts are in units of satoshis (1/100,000,000 of a bitcoin)
 ```
 Identity is the Peer-ID, this will identify the peer and its wallet. Signature is the current request signature, using `requestSigningKey`, the `m/1/1` derivative of the Extended Private Key.
 
-See [Bitcore Wallet Client](https://github.com/digibyte/digibytejs-wallet-client/blob/master/lib/api.js#L73) for implementation details.
+See [tdc Wallet Client](https://github.com/digibyte/digibytejs-wallet-client/blob/master/lib/api.js#L73) for implementation details.
 
 
 ## GET Endpoints
