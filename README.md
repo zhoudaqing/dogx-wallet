@@ -1,9 +1,9 @@
 
-# bitcore-wallet-service
+# tdc-wallet-service
 
-[![NPM Package](https://img.shields.io/npm/v/bitcore-wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/bitcore-wallet-service)
-[![Build Status](https://img.shields.io/travis/bitpay/bitcore-wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/bitcore-wallet-service)
-[![Coverage Status](https://coveralls.io/repos/bitpay/bitcore-wallet-service/badge.svg?branch=master)](https://coveralls.io/r/bitpay/bitcore-wallet-service?branch=master)
+[![NPM Package](https://img.shields.io/npm/v/tdc-wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/tdc-wallet-service)
+[![Build Status](https://img.shields.io/travis/bitpay/tdc-wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/tdc-wallet-service)
+[![Coverage Status](https://coveralls.io/repos/bitpay/tdc-wallet-service/badge.svg?branch=master)](https://coveralls.io/r/bitpay/tdc-wallet-service?branch=master)
 
 A Multisig HD Bitcore Wallet Service.
 
@@ -13,11 +13,11 @@ Bitcore Wallet Service facilitates multisig HD wallets creation and operation th
 
 DWS can usually be installed within minutes and accommodates all the needed infrastructure for peers in a multisig wallet to communicate and operate – with minimum server trust.
   
-See [Bitcore-wallet-client](https://github.com/digibyte/bitcore-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [Bitcore-wallet](https://github.com/digibyte/bitcore-wallet) for a simple CLI wallet implementation that relies on DWS.
+See [Bitcore-wallet-client](https://github.com/digibyte/tdc-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [Bitcore-wallet](https://github.com/digibyte/tdc-wallet) for a simple CLI wallet implementation that relies on DWS.
 
 DWS is been used in production enviroments for [Copay Wallet](https://copay.io), [Bitpay App wallet](https://bitpay.com/wallet) and others.  
 
-More about DWS at https://blog.bitpay.com/announcing-the-bitcore-wallet-suite/
+More about DWS at https://blog.bitpay.com/announcing-the-tdc-wallet-suite/
 
 # Getting Started
 ```
@@ -30,7 +30,7 @@ This will launch the DWS service (with default settings) at `http://localhost:32
 
 DWS needs mongoDB. You can configure the connection at `config.js`
 
-DWS supports SSL and Clustering. For a detailed guide on installing DWS with extra features see [Installing DWS](https://github.com/digibyte/bitcore-wallet-service/blob/master/installation.md). 
+DWS supports SSL and Clustering. For a detailed guide on installing DWS with extra features see [Installing DWS](https://github.com/digibyte/tdc-wallet-service/blob/master/installation.md). 
 
 DWS uses by default a Request Rate Limitation to CreateWallet endpoint. If you need to modify it, check defaults.js' `Defaults.RateLimit`
 
@@ -46,7 +46,7 @@ DWS can be used with PM2 with the provided `app.js` script:
  * Private keys are never sent to DWS. Copayers store them locally.
  * Extended public keys are stored on DWS. This allows DWS to easily check wallet balance, send offline notifications to copayers, etc.
  * During wallet creation, the initial copayer creates a wallet secret that contains a private key. All copayers need to prove they have the secret by signing their information with this private key when joining the wallet. The secret should be shared using secured channels.
- * A copayer could join the wallet more than once, and there is no mechanism to prevent this. See [wallet](https://github.com/bitpay/bitcore-wallet)'s confirm command, for a method for confirming copayers.
+ * A copayer could join the wallet more than once, and there is no mechanism to prevent this. See [wallet](https://github.com/bitpay/tdc-wallet)'s confirm command, for a method for confirming copayers.
  * All DWS responses are verified:
   * Addresses and change addresses are derived independently and locally by the copayers from their local data.
   * TX Proposals templates are signed by copayers and verified by others, so the DWS cannot create or tamper with them.
@@ -67,7 +67,7 @@ DWS can be used with PM2 with the provided `app.js` script:
   // CAroot: '', // ex. 'AddTrustExternalCARoot.crt'
 ```
 
-@dabura667 made a report about how to use letsencrypt with DWS: https://github.com/bitpay/bitcore-wallet-service/issues/423
+@dabura667 made a report about how to use letsencrypt with DWS: https://github.com/bitpay/tdc-wallet-service/issues/423
   
 
 # REST API
