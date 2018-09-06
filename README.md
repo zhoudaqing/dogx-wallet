@@ -1,23 +1,23 @@
 
-# tdc-wallet-service
+# bsa-wallet-service
 
-[![NPM Package](https://img.shields.io/npm/v/tdc-wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/tdc-wallet-service)
-[![Build Status](https://img.shields.io/travis/bitpay/tdc-wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/tdc-wallet-service)
-[![Coverage Status](https://coveralls.io/repos/bitpay/tdc-wallet-service/badge.svg?branch=master)](https://coveralls.io/r/bitpay/tdc-wallet-service?branch=master)
+[![NPM Package](https://img.shields.io/npm/v/bsa-wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/bsa-wallet-service)
+[![Build Status](https://img.shields.io/travis/bitpay/bsa-wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/bsa-wallet-service)
+[![Coverage Status](https://coveralls.io/repos/bitpay/bsa-wallet-service/badge.svg?branch=master)](https://coveralls.io/r/bitpay/bsa-wallet-service?branch=master)
 
-A Multisig HD tdc Wallet Service.
+A Multisig HD bsa Wallet Service.
 
 # Description
 
-tdc Wallet Service facilitates multisig HD wallets creation and operation through a (hopefully) simple and intuitive REST API.
+bsa Wallet Service facilitates multisig HD wallets creation and operation through a (hopefully) simple and intuitive REST API.
 
 DWS can usually be installed within minutes and accommodates all the needed infrastructure for peers in a multisig wallet to communicate and operate – with minimum server trust.
   
-See [tdc-wallet-client](https://github.com/digibyte/tdc-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [tdc-wallet](https://github.com/digibyte/tdc-wallet) for a simple CLI wallet implementation that relies on DWS.
+See [bsa-wallet-client](https://github.com/digibyte/bsa-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [bsa-wallet](https://github.com/digibyte/bsa-wallet) for a simple CLI wallet implementation that relies on DWS.
 
 DWS is been used in production enviroments for [Copay Wallet](https://copay.io), [Bitpay App wallet](https://bitpay.com/wallet) and others.  
 
-More about DWS at https://blog.bitpay.com/announcing-the-tdc-wallet-suite/
+More about DWS at https://blog.bitpay.com/announcing-the-bsa-wallet-suite/
 
 # Getting Started
 ```
@@ -30,7 +30,7 @@ This will launch the DWS service (with default settings) at `http://localhost:32
 
 DWS needs mongoDB. You can configure the connection at `config.js`
 
-DWS supports SSL and Clustering. For a detailed guide on installing DWS with extra features see [Installing DWS](https://github.com/digibyte/tdc-wallet-service/blob/master/installation.md). 
+DWS supports SSL and Clustering. For a detailed guide on installing DWS with extra features see [Installing DWS](https://github.com/digibyte/bsa-wallet-service/blob/master/installation.md). 
 
 DWS uses by default a Request Rate Limitation to CreateWallet endpoint. If you need to modify it, check defaults.js' `Defaults.RateLimit`
 
@@ -46,7 +46,7 @@ DWS can be used with PM2 with the provided `app.js` script:
  * Private keys are never sent to DWS. Copayers store them locally.
  * Extended public keys are stored on DWS. This allows DWS to easily check wallet balance, send offline notifications to copayers, etc.
  * During wallet creation, the initial copayer creates a wallet secret that contains a private key. All copayers need to prove they have the secret by signing their information with this private key when joining the wallet. The secret should be shared using secured channels.
- * A copayer could join the wallet more than once, and there is no mechanism to prevent this. See [wallet](https://github.com/bitpay/tdc-wallet)'s confirm command, for a method for confirming copayers.
+ * A copayer could join the wallet more than once, and there is no mechanism to prevent this. See [wallet](https://github.com/bitpay/bsa-wallet)'s confirm command, for a method for confirming copayers.
  * All DWS responses are verified:
   * Addresses and change addresses are derived independently and locally by the copayers from their local data.
   * TX Proposals templates are signed by copayers and verified by others, so the DWS cannot create or tamper with them.
@@ -67,7 +67,7 @@ DWS can be used with PM2 with the provided `app.js` script:
   // CAroot: '', // ex. 'AddTrustExternalCARoot.crt'
 ```
 
-@dabura667 made a report about how to use letsencrypt with DWS: https://github.com/bitpay/tdc-wallet-service/issues/423
+@dabura667 made a report about how to use letsencrypt with DWS: https://github.com/bitpay/bsa-wallet-service/issues/423
   
 
 # REST API
@@ -83,7 +83,7 @@ Note: all currency amounts are in units of satoshis (1/100,000,000 of a bitcoin)
 ```
 Identity is the Peer-ID, this will identify the peer and its wallet. Signature is the current request signature, using `requestSigningKey`, the `m/1/1` derivative of the Extended Private Key.
 
-See [tdc Wallet Client](https://github.com/digibyte/digibytejs-wallet-client/blob/master/lib/api.js#L73) for implementation details.
+See [bsa Wallet Client](https://github.com/digibyte/digibytejs-wallet-client/blob/master/lib/api.js#L73) for implementation details.
 
 
 ## GET Endpoints
