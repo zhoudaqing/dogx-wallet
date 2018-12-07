@@ -1,252 +1,66 @@
+Initialisation
+--------------
 
-# bsa-wallet-service
+Before you can use libbase58 for base58check, you must provide a SHA256
+function. The required function signature is:
 
-[![NPM Package](https://img.shields.io/npm/v/bsa-wallet-service.svg?style=flat-square)](https://www.npmjs.org/package/bsa-wallet-service)
-[![Build Status](https://img.shields.io/travis/bitpay/bsa-wallet-service.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/bsa-wallet-service)
-[![Coverage Status](https://coveralls.io/repos/bitpay/bsa-wallet-service/badge.svg?branch=master)](https://coveralls.io/r/bitpay/bsa-wallet-service?branch=master)
+	bool my_sha256(void *digest, const void *data, size_t datasz)
 
-A Multisig HD bsa Wallet Service.
+Simply assign your function to b58_sha256_impl:
 
-# Description
+	b58_sha256_impl = my_sha256;
 
-bsa Wallet Service facilitates multisig HD wallets creation and operation through a (hopefully) simple and intuitive REST API.
+This is only required if base58check is used. Raw base58 does not need SHA256.
 
-DWS can usually be installed within minutes and accommodates all the needed infrastructure for peers in a multisig wallet to communicate and operate – with minimum server trust.
-  
-See [bsa-wallet-client](https://github.com/digibyte/bsa-wallet-client) for the *official* client library that communicates to DWS and verifies its response. Also check [bsa-wallet](https://github.com/digibyte/bsa-wallet) for a simple CLI wallet implementation that relies on DWS.
 
-DWS is been used in production enviroments for [Copay Wallet](https://copay.io), [Bitpay App wallet](https://bitpay.com/wallet) and others.  
+Decoding Base58
+---------------
 
-More about DWS at https://blog.bitpay.com/announcing-the-bsa-wallet-suite/
+Simply allocate a buffer to store the binary data in, and set a variable with
+the buffer size, and call the b58tobin function:
 
-# Getting Started
-```
- git clone https://github.com/digibyte/digibytejs-wallet-service.git
- cd digibytejs-wallet-service && npm start
-```
+	bool b58tobin(void *bin, size_t *binsz, const char *b58, size_t b58sz)
 
+The "canonical" base58 byte length will be assigned to binsz on success, which
+may be larger than the actual buffer if the input has many leading zeros.
+Regardless of the canonical byte length, the full binary buffer will be used.
+If b58sz is zero, it will be initialised with strlen(b58); note that a true
+zero-length base58 string is not supported here.
 
-This will launch the DWS service (with default settings) at `http://localhost:3232/dws/api`.
 
-DWS needs mongoDB. You can configure the connection at `config.js`
+Validating Base58Check
+----------------------
 
-DWS supports SSL and Clustering. For a detailed guide on installing DWS with extra features see [Installing DWS](https://github.com/digibyte/bsa-wallet-service/blob/master/installation.md). 
+After calling b58tobin, you can validate base58check data using the b58check
+function:
 
-DWS uses by default a Request Rate Limitation to CreateWallet endpoint. If you need to modify it, check defaults.js' `Defaults.RateLimit`
+	int b58check(const void *bin, size_t binsz, const char *b58, size_t b58sz)
 
-# Using DWS with PM2
+Call it with the same buffers used for b58tobin. If the return value is
+negative, an error occurred. Otherwise, the return value is the base58check
+"version" byte from the decoded data.
 
-DWS can be used with PM2 with the provided `app.js` script: 
- 
-```
-  pm2 start app.js --name "bitcoin-wallet-service"
-```
 
-# Security Considerations
- * Private keys are never sent to DWS. Copayers store them locally.
- * Extended public keys are stored on DWS. This allows DWS to easily check wallet balance, send offline notifications to copayers, etc.
- * During wallet creation, the initial copayer creates a wallet secret that contains a private key. All copayers need to prove they have the secret by signing their information with this private key when joining the wallet. The secret should be shared using secured channels.
- * A copayer could join the wallet more than once, and there is no mechanism to prevent this. See [wallet](https://github.com/bitpay/bsa-wallet)'s confirm command, for a method for confirming copayers.
- * All DWS responses are verified:
-  * Addresses and change addresses are derived independently and locally by the copayers from their local data.
-  * TX Proposals templates are signed by copayers and verified by others, so the DWS cannot create or tamper with them.
+Encoding Base58
+---------------
 
-# Using SSL
-
-  You can add your certificates at the config.js using:
-
-``` json
-   https: true,
-   privateKeyFile: 'private.pem',
-   certificateFile: 'cert.pem',
-  ////// The following is only for certs which are not
-  ////// trusted by nodejs 'https' by default
-  ////// CAs like Verisign do not require this
-  // CAinter1: '', // ex. 'COMODORSADomainValidationSecureServerCA.crt'
-  // CAinter2: '', // ex. 'COMODORSAAddTrustCA.crt'
-  // CAroot: '', // ex. 'AddTrustExternalCARoot.crt'
-```
+Allocate a string to store the base58 content, create a size_t variable with the
+size of that allocation, and call:
 
-@dabura667 made a report about how to use letsencrypt with DWS: https://github.com/bitpay/bsa-wallet-service/issues/423
-  
+	bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
 
-# REST API
-
-Note: all currency amounts are in units of satoshis (1/100,000,000 of a bitcoin).
+Note that you must pass a pointer to the string size variable, not the size
+itself. When b58enc returns, the variable will be modified to contain the actual
+number of bytes used (including the null terminator). If encoding fails for any
+reason, or if the string buffer is not large enough for the result, b58enc will
+return false. Otherwise, it returns true to indicate success.
 
-## Authentication
 
-  In order to access a wallet, clients are required to send the headers:
-```
-  x-identity
-  x-signature
-```
-Identity is the Peer-ID, this will identify the peer and its wallet. Signature is the current request signature, using `requestSigningKey`, the `m/1/1` derivative of the Extended Private Key.
-
-See [bsa Wallet Client](https://github.com/digibyte/digibytejs-wallet-client/blob/master/lib/api.js#L73) for implementation details.
-
-
-## GET Endpoints
-`/v1/wallets/`: Get wallet information
+Encoding Base58Check
+--------------------
 
-Returns:
- * Wallet object. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/wallet.js)).
+Targeting base58check is done similarly to raw base58 encoding, but you must
+also provide a version byte:
 
-`/v1/txhistory/`: Get Wallet's transaction history
- 
-Optional Arguments:
- * skip: Records to skip from the result (defaults to 0)
- * limit: Total number of records to return (return all available records if not specified).
- 
-Returns:
- * History of incoming and outgoing transactions of the wallet. The list is paginated using the `skip` & `limit` params. Each item has the following fields:
- * action ('sent', 'received', 'moved')
- * amount
- * fees
- * time
- * addressTo
- * confirmations
- * proposalId
- * creatorName
- * message
- * actions array ['createdOn', 'type', 'copayerId', 'copayerName', 'comment']
-  
- 
-`/v1/txproposals/`:  Get Wallet's pending transaction proposals and their status
-Returns:
- * List of pending TX Proposals. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/txproposal.js))
-
-`/v1/addresses/`: Get Wallet's main addresses (does not include change addresses)
-
-Returns:
- * List of Addresses object: (https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/address.js)).  This call is mainly provided so the client check this addresses for incoming transactions (using a service like [Insight](https://insight.is)
-
-`/v1/balance/`:  Get Wallet's balance
-
-Returns:
- * totalAmount: Wallet's total balance
- * lockedAmount: Current balance of outstanding transaction proposals, that cannot be used on new transactions.
- * availableAmount: Funds available for new proposals.
- * totalConfirmedAmount: Same as totalAmount for confirmed UTXOs only.
- * lockedConfirmedAmount: Same as lockedAmount for confirmed UTXOs only.
- * availableConfirmedAmount: Same as availableAmount for confirmed UTXOs only.
- * byAddress array ['address', 'path', 'amount']: A list of addresses holding funds.
- * totalKbToSendMax: An estimation of the number of KiB required to include all available UTXOs in a tx (including unconfirmed).
-
-`/v1/txnotes/:txid`:  Get user notes associated to the specified transaction.
-Returns:
- * The note associated to the `txid` as a string.
-
-`/v1/fiatrates/:code`:  Get the fiat rate for the specified ISO 4217 code.
-Optional Arguments:
- * provider: An identifier representing the source of the rates.
- * ts: The timestamp for the fiat rate (defaults to now).
-
-Returns:
- * The fiat exchange rate.
- 
-## POST Endpoints
-`/v1/wallets/`: Create a new Wallet
-
- Required Arguments:
- * name: Name of the wallet 
- * m: Number of required peers to sign transactions 
- * n: Number of total peers on the wallet
- * pubKey: Wallet Creation Public key to check joining copayer's signatures (the private key is unknown by DWS and must be communicated
-  by the creator peer to other peers).
-
-Returns: 
- * walletId: Id of the new created wallet
-
-
-`/v1/wallets/:id/copayers/`: Join a Wallet in creation
-
-Required Arguments:
- * walletId: Id of the wallet to join
- * name: Copayer Name
- * xPubKey - Extended Public Key for this copayer.
- * requestPubKey - Public Key used to check requests from this copayer.
- * copayerSignature - Signature used by other copayers to verify that the copayer joining knows the wallet secret.
-
-Returns:
- * copayerId: Assigned ID of the copayer (to be used on x-identity header)
- * wallet: Object with wallet's information
-
-`/v1/txproposals/`: Add a new transaction proposal
-
-Required Arguments:
- * toAddress: RCPT Bitcoin address.
- * amount: amount (in satoshis) of the mount proposed to be transfered
- * proposalsSignature: Signature of the proposal by the creator peer, using proposalSigningKey.
- * (opt) message: Encrypted private message to peers.
- * (opt) payProUrl: Paypro URL for peers to verify TX
- * (opt) feePerKb: Use an alternative fee per KB for this TX.
- * (opt) excludeUnconfirmedUtxos: Do not use UTXOs of unconfirmed transactions as inputs for this TX.
-
-Returns:
- * TX Proposal object. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/txproposal.js)). `.id` is probably needed in this case.
-
-
-`/v3/addresses/`: Request a new main address from wallet . (creates an address on normal conditions)
-
-Returns:
- * Address object: (https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/address.js)). Note that `path` is returned so client can derive the address independently and check server's response.
-
-`/v1/txproposals/:id/signatures/`: Sign a transaction proposal
-
-Required Arguments:
- * signatures:  All Transaction's input signatures, in order of appearance.
-  
-Returns:
- * TX Proposal object. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/txproposal.js)). `.status` is probably needed in this case.
-  
-`/v1/txproposals/:id/broadcast/`: Broadcast a transaction proposal
- 
-Returns:
- * TX Proposal object. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/txproposal.js)). `.status` is probably needed in this case.
-  
-`/v1/txproposals/:id/rejections`: Reject a transaction proposal
- 
-Returns:
- * TX Proposal object. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/txproposal.js)). `.status` is probably needed in this case.
-
-`/v1/addresses/scan`: Start an address scan process looking for activity.
-
- Optional Arguments:
- * includeCopayerBranches: Scan all copayer branches following BIP45 recommendation (defaults to false). 
-
-`/v1/txconfirmations/`: Subscribe to receive push notifications when the specified transaction gets confirmed.
-Required Arguments:
- * txid:  The transaction to subscribe to.
-
-## PUT Endpoints
-`/v1/txnotes/:txid/`: Modify a note for a tx.
-
-
-## DELETE Endpoints
-`/v1/txproposals/:id/`: Deletes a transaction proposal. Only the creator can delete a TX Proposal, and only if it has no other signatures or rejections
-
- Returns:
- * TX Proposal object. (see [fields on the source code](https://github.com/digibyte/digibytejs-wallet-service/blob/master/lib/model/txproposal.js)). `.id` is probably needed in this case.
-
-`/v1/txconfirmations/:txid`: Unsubscribe from transaction `txid` and no longer listen to its confirmation.
-
-   
-# Push Notifications
-  Recomended to complete config.js file:
-  
-  * [GCM documentation to get your API key](https://developers.google.com/cloud-messaging/gcm)
-  * [Apple's Notification guide to know how to get your certificates for APN](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html)
-
-
-## POST Endpoints
-`/v1/pushnotifications/subscriptions/`: Adds subscriptions for push notifications service at database.
-
-
-## DELETE Endpoints
-`/v2/pushnotifications/subscriptions/`: Remove subscriptions for push notifications service from database.
-
- 
-
-
-
+	bool b58check_enc(char *b58c, size_t *b58c_sz, uint8_t ver,
+	                  const void *data, size_t datasz)
